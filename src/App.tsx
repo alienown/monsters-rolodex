@@ -1,20 +1,27 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import { useState, useEffect, ChangeEvent } from 'react';
+import { getData } from './utils/data.utils';
 import CardList from './components/card-list/card-list.component';
 import SearchBox from './components/search-box/search-box.component';
+import './App.css';
+
+export type Monster = {
+  id: string;
+  name: string;
+  email: string;
+};
 
 const App = () => {
   const [searchField, setSearchField] = useState('');
-  const [title, setTitleField] = useState('');
-  const [monsters, setMonsters] = useState([]);
+  const [monsters, setMonsters] = useState<Monster[]>([]);
   const [filteredMonsters, setFilteredMonsters] = useState(monsters);
 
-  console.log('render App');
-
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then((response) => response.json())
-      .then((users) => setMonsters(users));
+    const fetchUsers = async () => {
+      const users = await getData<Monster[]>('https://jsonplaceholder.typicode.com/users');
+      setMonsters(users);
+    };
+
+    fetchUsers();
   }, []);
 
   useEffect(() => {
@@ -25,29 +32,18 @@ const App = () => {
     setFilteredMonsters(newFilteredMonsters);
   }, [monsters, searchField]);
 
-  const onSearchChange = (event) => {
+  const onSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     const searchFieldString = event.target.value.toLocaleLowerCase();
     setSearchField(searchFieldString);
   };
 
-  const onTitleChange = (event) => {
-    const titleFieldString = event.target.value.toLocaleLowerCase();
-    setTitleField(titleFieldString);
-  };
-
   return (
     <div className="App">
-      <h1 className="app-title">{title}</h1>
+      <h1 className="app-title">Monsters Rolodex</h1>
       <SearchBox
         placeholder="search monsters"
         className="monsters-search-box"
         onChangeHandler={onSearchChange}
-      />
-      <br />
-      <SearchBox
-        placeholder="set title"
-        className="title-search-box"
-        onChangeHandler={onTitleChange}
       />
       <CardList monsters={filteredMonsters} />
     </div>
